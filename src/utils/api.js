@@ -10,9 +10,9 @@ export const fetchManicurists = async () => {
     return [
       {
         id: 1,
-        name: "Ana",
+        name: "Claudia",
         specialty: "Especialista en uñas acrílicas",
-        avatar: "https://randomuser.me/api/portraits/women/44.jpg",
+        avatar: "/images/manicurists/claudia.jpg", // Reemplazar con foto real
         timeSlots: [
           { time: "09:00", available: true },
           { time: "10:00", available: false },
@@ -24,9 +24,9 @@ export const fetchManicurists = async () => {
       },
       {
         id: 2,
-        name: "Carmen",
+        name: "Sucel",
         specialty: "Especialista en diseños artísticos",
-        avatar: "https://randomuser.me/api/portraits/women/68.jpg",
+        avatar: "/images/manicurists/sucel.jpg", // Reemplazar con foto real
         timeSlots: [
           { time: "09:00", available: false },
           { time: "10:00", available: true },
@@ -55,6 +55,57 @@ export const fetchManicurists = async () => {
     return manicurist.timeSlots;
   };
   
+  // Simula obtención de estilos de uñas predefinidos
+  export const fetchNailStyles = async () => {
+    // Simulamos un retraso de red
+    await new Promise(resolve => setTimeout(resolve, 600));
+    
+    return [
+      { 
+        id: 1, 
+        name: 'Francesas Clásicas', 
+        imageUrl: '/images/nail-styles/french-classic.jpg', 
+        description: 'Elegante y minimalista',
+        category: 'clásico' 
+      },
+      { 
+        id: 2, 
+        name: 'Acrílicas Decoradas', 
+        imageUrl: '/images/nail-styles/acrylic-decorated.jpg', 
+        description: 'Con pedrería y detalles',
+        category: 'decorado' 
+      },
+      { 
+        id: 3, 
+        name: 'Efecto Mármol', 
+        imageUrl: '/images/nail-styles/marble-effect.jpg', 
+        description: 'Moderno y sofisticado',
+        category: 'tendencia' 
+      },
+      { 
+        id: 4, 
+        name: 'Diseños Geométricos', 
+        imageUrl: '/images/nail-styles/geometric-design.jpg', 
+        description: 'Contemporáneo',
+        category: 'artístico' 
+      },
+      { 
+        id: 5, 
+        name: 'Degradados', 
+        imageUrl: '/images/nail-styles/ombre-gradient.jpg', 
+        description: 'Suaves transiciones de color',
+        category: 'tendencia' 
+      },
+      { 
+        id: 6, 
+        name: 'Glitter & Brillos', 
+        imageUrl: '/images/nail-styles/glitter-shine.jpg', 
+        description: 'Para ocasiones especiales',
+        category: 'especial' 
+      },
+    ];
+  };
+  
   // Simula creación de una cita
   export const createAppointment = async (appointmentData) => {
     // Simulamos un retraso de red
@@ -65,7 +116,8 @@ export const fetchManicurists = async () => {
         !appointmentData.date ||
         !appointmentData.timeSlot ||
         !appointmentData.clientName ||
-        !appointmentData.clientPhone) {
+        !appointmentData.clientPhone ||
+        !appointmentData.nailStyle) {
       throw new Error('Datos de cita incompletos');
     }
     
@@ -88,5 +140,23 @@ export const fetchManicurists = async () => {
       sent: true,
       to: email,
       appointmentId
+    };
+  };
+  
+  // Simula subida de imagenes de referencia
+  export const uploadReferenceImages = async (files) => {
+    // Simulamos un retraso de red para simular la subida
+    await new Promise(resolve => setTimeout(resolve, 1200));
+    
+    // Simulamos respuesta con URLs de imágenes subidas
+    const uploadedUrls = files.map((_, index) => ({
+      id: `img-${Date.now()}-${index}`,
+      url: `https://randomuser.me/api/portraits/thumb/women/${10 + index}.jpg`,
+      thumbnailUrl: `https://randomuser.me/api/portraits/thumb/women/${10 + index}.jpg`,
+    }));
+    
+    return {
+      success: true,
+      uploadedFiles: uploadedUrls
     };
   };

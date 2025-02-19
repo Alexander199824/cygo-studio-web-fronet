@@ -12,15 +12,17 @@ export const AppointmentProvider = ({ children }) => {
     name: '',
     email: '',
     phone: '',
-    service: ''
+    service: '',
+    nailStyle: null // Nuevo campo para el estilo de uñas
   });
 
   // Datos de manicuristas
   const manicurists = [
     {
       id: 1,
-      name: "Ana",
+      name: "Claudia",
       specialty: "Especialista en uñas acrílicas",
+      avatar: "/images/manicurists/claudia.jpg", // Reemplazar con foto real
       timeSlots: [
         { time: "09:00", available: true },
         { time: "10:00", available: false },
@@ -32,8 +34,9 @@ export const AppointmentProvider = ({ children }) => {
     },
     {
       id: 2,
-      name: "Carmen",
+      name: "Sucel",
       specialty: "Especialista en diseños artísticos",
+      avatar: "/images/manicurists/sucel.jpg", // Reemplazar con foto real
       timeSlots: [
         { time: "09:00", available: false },
         { time: "10:00", available: true },
@@ -57,7 +60,8 @@ export const AppointmentProvider = ({ children }) => {
            selectedTimeSlot !== null && 
            formData.name.trim() !== '' && 
            formData.email.trim() !== '' && 
-           formData.phone.trim() !== '';
+           formData.phone.trim() !== '' &&
+           formData.nailStyle !== null; // Verificamos que se haya seleccionado un estilo
   };
 
   const submitAppointment = () => {
@@ -78,7 +82,8 @@ export const AppointmentProvider = ({ children }) => {
       name: '',
       email: '',
       phone: '',
-      service: ''
+      service: '',
+      nailStyle: null
     });
     
     return true;

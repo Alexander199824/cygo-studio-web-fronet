@@ -1,0 +1,119 @@
+@import 'tailwindcss/base';
+@import 'tailwindcss/components';
+@import 'tailwindcss/utilities';
+
+body {
+  font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+  margin: 0;
+  padding: 0;
+}
+
+/* Animación para mensaje de bienvenida */
+.welcome-alert {
+  animation: slideIn 0.5s ease-out;
+}
+
+@keyframes slideIn {
+  0% {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Estilos para calendario */
+.calendar-day {
+  width: 40px;
+  height: 40px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 50%;
+  transition: all 0.2s;
+}
+
+.calendar-day:hover:not(.inactive):not(.selected) {
+  background-color: #f3f4f6;
+}
+
+.calendar-day.selected {
+  background-color: #ec4899;
+  color: white;
+}
+
+.calendar-day.inactive {
+  color: #d1d5db;
+  cursor: default;
+}
+
+/* Estilos para botones de hora */
+.time-slot {
+  transition: all 0.2s;
+}
+
+.time-slot.available:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Estilos para manicuristas */
+.manicurist-option {
+  transition: all 0.2s;
+  border: 2px solid transparent;
+}
+
+.manicurist-option:hover {
+  border-color: #ec4899;
+}
+
+.manicurist-option.selected {
+  border-color: #ec4899;
+  background-color: #fce7f3;
+}
+
+/* Focus styles */
+button:focus, 
+input:focus, 
+select:focus, 
+textarea:focus {
+  outline: none;
+  box-shadow: 0 0 0 3px rgba(236, 72, 153, 0.5);
+}
+
+/* Animación de ripple para botones */
+.btn-primary {
+  position: relative;
+  overflow: hidden;
+}
+
+.btn-primary:after {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  width: 5px;
+  height: 5px;
+  background: rgba(255, 255, 255, 0.5);
+  opacity: 0;
+  border-radius: 100%;
+  transform: scale(1, 1) translate(-50%);
+  transform-origin: 50% 50%;
+}
+
+@keyframes ripple {
+  0% {
+    transform: scale(0, 0);
+    opacity: 0.5;
+  }
+  100% {
+    transform: scale(100, 100);
+    opacity: 0;
+  }
+}
+
+.btn-primary:focus:not(:active)::after {
+  animation: ripple 1s ease-out;
+}

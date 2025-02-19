@@ -1,24 +1,36 @@
-import logo from './logo.svg';
-import './App.css';
+import React, { useState } from 'react';
+import { AppointmentProvider } from './store/AppointmentContext';
+import Navbar from './components/Navbar';
+import WelcomeMessage from './components/WelcomeMessage';
+import ManicuristSelection from './components/ManicuristSelection';
+import Calendar from './components/Calendar';
+import TimeSlots from './components/TimeSlots';
+import AppointmentForm from './components/AppointmentForm';
+import './styles/index.css';
 
 function App() {
+  const [showWelcome, setShowWelcome] = useState(true);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit <code>src/App.js</code> and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <AppointmentProvider>
+      <div className="min-h-screen bg-gray-50">
+        <Navbar />
+        
+        <div className="max-w-7xl mx-auto px-4 py-8">
+          {showWelcome && (
+            <WelcomeMessage onClose={() => setShowWelcome(false)} />
+          )}
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <ManicuristSelection />
+            <Calendar />
+            <TimeSlots />
+          </div>
+          
+          <AppointmentForm />
+        </div>
+      </div>
+    </AppointmentProvider>
   );
 }
 

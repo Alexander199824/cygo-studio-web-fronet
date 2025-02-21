@@ -2,15 +2,15 @@ const express = require('express');
 const path = require('path');
 const app = express();
 
-// Servir archivos estáticos desde la carpeta build
+// Servir archivos estáticos
 app.use(express.static(path.join(__dirname, 'build')));
 
-// Manejar todas las rutas enviando el archivo index.html
+// Todas las rutas van a index.html
 app.get('*', (req, res) => {
   res.sendFile(path.join(__dirname, 'build', 'index.html'));
 });
 
-const port = process.env.PORT || 10000;
+const port = process.env.PORT || 3000;
 app.listen(port, () => {
-  console.log('Server running on port', port);
+  console.log(`Server running on port ${port}`);
 });

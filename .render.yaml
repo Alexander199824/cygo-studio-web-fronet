@@ -2,14 +2,12 @@ services:
   - type: web
     name: cygo-studio-web-fronet
     env: node
-    region: ohio
-    plan: free
-    branch: master
-    buildCommand: npm install && npm run build
-    startCommand: npm run prod
-    healthCheckPath: /
+    buildCommand: npm install && CI=false npm run build
+    startCommand: node server.js
     envVars:
       - key: NODE_ENV
         value: production
       - key: PORT
         value: 10000
+      - key: NODE_OPTIONS
+        value: --max-old-space-size=512

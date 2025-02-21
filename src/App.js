@@ -1,122 +1,95 @@
-import React, { useState, useEffect } from 'react';
+import React, { useEffect, useState } from 'react';
+import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import LoginPage from './components/LoginPage';
+import ClientDashboard from './components/ClientDashboard';
+import ManicuristDashboard from './components/ManicuristDashboard';
+import AppointmentBooking from './components/AppointmentBooking';
+import AppointmentConfirmed from './components/AppointmentConfirmed';
 import { AppointmentProvider } from './store/AppointmentContext';
 import Navbar from './components/Navbar';
-import WelcomeMessage from './components/WelcomeMessage';
-import Calendar from './components/Calendar';
-import ManicuristSelection from './components/ManicuristSelection';
-import TimeSlots from './components/TimeSlots';
-import NailStyleSelection from './components/NailStyleSelection';
-import AppointmentForm from './components/AppointmentForm';
+import { getCurrentUser, checkAccess } from './utils/auth';
 
-const App = () => {
-  const [showWelcome, setShowWelcome] = useState(true);
-  const [currentStep, setCurrentStep] = useState(1);
-  const [isMobileView, setIsMobileView] = useState(window.innerWidth < 1024);
-
-  // Detectar cambio de tamaño de pantalla
-  useEffect(() => {
-    const handleResize = () => {
-      setIsMobileView(window.innerWidth < 1024);
-    };
-    
-    window.addEventListener('resize', handleResize);
-    return () => window.removeEventListener('resize', handleResize);
-  }, []);
-
-  // Renderizado condicional basado en vista móvil o escritorio
-  const renderContent = () => {
-    if (isMobileView) {
-      // Vista móvil: mostrar componentes según el paso actual
-      return (
-        <div className="space-y-6">
-          {currentStep === 1 && (
-            <>
-              <Calendar />
-              <ManicuristSelection />
-              <button 
-                onClick={() => setCurrentStep(2)}
-                className="w-full py-3 bg-pink-600 text-white rounded-md"
-              >
-                Continuar
-              </button>
-            </>
-          )}
-          
-          {currentStep === 2 && (
-            <>
-              <TimeSlots />
-              <NailStyleSelection />
-              <div className="flex space-x-4">
-                <button 
-                  onClick={() => setCurrentStep(1)}
-                  className="flex-1 py-3 bg-gray-200 text-gray-800 rounded-md"
-                >
-                  Atrás
-                </button>
-                <button 
-                  onClick={() => setCurrentStep(3)}
-                  className="flex-1 py-3 bg-pink-600 text-white rounded-md"
-                >
-                  Continuar
-                </button>
-              </div>
-            </>
-          )}
-          
-          {currentStep === 3 && (
-            <>
-              <AppointmentForm />
-              <button 
-                onClick={() => setCurrentStep(2)}
-                className="w-full py-3 bg-gray-200 text-gray-800 rounded-md mt-4"
-              >
-                Atrás
-              </button>
-            </>
-          )}
-        </div>
-      );
-    } else {
-      // Vista de escritorio: diseño más elegante de dos columnas
-      return (
-        <div className="grid grid-cols-12 gap-8">
-          <div className="col-span-12 lg:col-span-8 lg:order-2">
-            <div className="grid grid-cols-2 gap-6">
-              <div className="space-y-6">
-                <ManicuristSelection />
-                <Calendar />
-              </div>
-              <div className="space-y-6">
-                <TimeSlots />
-                <NailStyleSelection />
-              </div>
-            </div>
-          </div>
-          
-          <div className="col-span-12 lg:col-span-4 lg:order-1">
-            <div className="sticky top-24">
-              <AppointmentForm />
-            </div>
-          </div>
-        </div>
-      );
-    }
-  };
-
-  return (
-    <AppointmentProvider>
-      <div className="min-h-screen bg-gray-50">
-        <Navbar />
-        <div className="max-w-7xl mx-auto px-4 py-8">
-          {showWelcome && (
-            <WelcomeMessage onClose={() => setShowWelcome(false)} />
-          )}
-          
-          {renderContent()}
-        </div>
-      </div>
-    </AppointmentProvider>
-  );
+// Componente para proteger rutas
+const ProtectedRoute = ({ children, requiredRole }) => {
+  const hasAccess = checkAccess(requiredRole);
+  
+  if (!hasAccess) {
+    return <Navigate to="/login" />;
+  }
+  
+  return children;
 };
+
+function App() {
+  const [initialCheckDone, setInitialCheckDone] = useState(false);
+  
+  useEffect(() => {
+    // Verificar autenticación inicial
+    getCurrentUser();
+    setInitialCheckDone(true);
+  }, []);
+  
+  if (!initialCheckDone) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <p className="text-gray-500">Cargando...</p>
+      </div>
+    );
+  }
+  
+  return (
+    <BrowserRouter>
+      <AppointmentProvider>
+        <Navbar />
+        
+        <Routes>
+          {/* Ruta principal - página de citas */}
+          <Route path="/" element={<AppointmentBooking />} />
+          
+          {/* Ruta de confirmación de cita */}
+          <Route path="/appointment-confirmed" element={<AppointmentConfirmed />} />
+          
+          {/* Ruta de login */}
+          <Route path="/login" element={<LoginPage />} />
+          
+          {/* Rutas protegidas */}
+          <Route
+            path="/client-dashboard/*"
+            element={
+              <ProtectedRoute requiredRole="client">
+                <ClientDashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          <Route
+            path="/manicurist-dashboard/*"
+            element={
+              <ProtectedRoute requiredRole="manicurist">
+                <ManicuristDashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Ruta para 404 - página no encontrada */}
+          <Route path="*" element={
+            <div className="min-h-screen flex items-center justify-center bg-gray-50">
+              <div className="text-center">
+                <h1 className="text-5xl font-bold text-pink-600 mb-4">404</h1>
+                <h2 className="text-2xl font-medium text-gray-800 mb-6">Página no encontrada</h2>
+                <a 
+                  href="/"
+                  className="px-5 py-3 bg-pink-600 text-white rounded-md hover:bg-pink-700 transition-colors"
+                >
+                  Volver al Inicio
+                </a>
+              </div>
+            </div>
+          } />
+        </Routes>
+      </AppointmentProvider>
+    </BrowserRouter>
+  );
+}
 
 export default App;

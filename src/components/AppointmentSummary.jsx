@@ -46,12 +46,12 @@ const AppointmentSummary = ({ onConfirm }) => {
   };
   
   return (
-    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 border-2 border-pink-100">
+    <div className="bg-white rounded-lg shadow-sm overflow-hidden mb-4 border-2 border-[#1a385a]/10">
       <div 
-        className="px-4 py-3 border-b border-gray-200 bg-pink-50 cursor-pointer flex justify-between items-center"
+        className="px-4 py-3 border-b border-gray-200 bg-[#1a385a]/5 cursor-pointer flex justify-between items-center"
         onClick={toggleExpand}
       >
-        <h2 className="font-semibold flex items-center gap-2 text-pink-800">
+        <h2 className="font-semibold flex items-center gap-2 text-[#1a385a]">
           <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
             <polyline points="14 2 14 8 20 8"></polyline>
@@ -122,7 +122,7 @@ const AppointmentSummary = ({ onConfirm }) => {
             </p>
             <button
               onClick={onConfirm}
-              className="w-full py-3 bg-pink-600 hover:bg-pink-700 text-white rounded-md transition-colors"
+              className="w-full py-3 bg-[#1a385a] hover:bg-[#2c4a76] text-white rounded-md transition-colors"
             >
               Confirmar Cita
             </button>

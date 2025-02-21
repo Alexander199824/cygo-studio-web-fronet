@@ -32,13 +32,13 @@ const AppointmentForm = () => {
 
     if (formData.nailStyle.type === 'predefined') {
       return (
-        <div className="text-sm bg-pink-50 p-2 rounded">
+        <div className="text-sm bg-[#1a385a]/10 p-2 rounded">
           Estilo seleccionado: <span className="font-medium">{formData.nailStyle.name}</span>
         </div>
       );
     } else if (formData.nailStyle.type === 'custom') {
       return (
-        <div className="text-sm bg-pink-50 p-2 rounded">
+        <div className="text-sm bg-[#1a385a]/10 p-2 rounded">
           <span className="font-medium">{formData.nailStyle.fileCount} {formData.nailStyle.fileCount === 1 ? 'imagen' : 'imágenes'}</span> de referencia subida{formData.nailStyle.fileCount === 1 ? '' : 's'}
         </div>
       );
@@ -92,7 +92,7 @@ const AppointmentForm = () => {
                 value={formData.name}
                 onChange={(e) => updateFormField('name', e.target.value)}
                 placeholder="Tu nombre completo" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a385a]"
               />
             </div>
             <div className="space-y-2">
@@ -102,7 +102,7 @@ const AppointmentForm = () => {
                 value={formData.email}
                 onChange={(e) => updateFormField('email', e.target.value)}
                 placeholder="tu@email.com" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a385a]"
               />
             </div>
             <div className="space-y-2">
@@ -112,7 +112,7 @@ const AppointmentForm = () => {
                 value={formData.phone}
                 onChange={(e) => updateFormField('phone', e.target.value)}
                 placeholder="Tu teléfono" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a385a]"
               />
             </div>
             <div className="space-y-2">
@@ -122,7 +122,7 @@ const AppointmentForm = () => {
                 value={formData.service}
                 onChange={(e) => updateFormField('service', e.target.value)}
                 placeholder="Ej: Uñas acrílicas, Manicure tradicional" 
-                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-pink-500"
+                className="w-full px-3 py-2 border border-gray-300 rounded-md focus:outline-none focus:ring-2 focus:ring-[#1a385a]"
               />
             </div>
             
@@ -136,7 +136,7 @@ const AppointmentForm = () => {
                 disabled={!isFormValid()}
                 className={`w-full py-3 rounded-md transition-colors focus:outline-none
                   ${isFormValid()
-                    ? 'bg-pink-600 hover:bg-pink-700 text-white'
+                    ? 'bg-[#1a385a] hover:bg-[#2c4a76] text-white'
                     : 'bg-gray-200 text-gray-500 cursor-not-allowed'}
                 `}
               >

@@ -1,12 +1,15 @@
 services:
   - type: web
-    name: cygo-studio-web
+    name: cygo-studio-web-fronet
     env: node
+    region: ohio
+    plan: free
+    branch: master
     buildCommand: npm install && npm run build
     startCommand: npm run prod
+    healthCheckPath: /
     envVars:
-      - key: NODE_VERSION
-        value: 18.17.0
       - key: NODE_ENV
         value: production
-    autoDeploy: true
+      - key: PORT
+        value: 10000

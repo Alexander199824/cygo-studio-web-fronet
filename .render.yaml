@@ -2,8 +2,9 @@ services:
   - type: web
     name: cygo-studio-web-fronet
     env: node
-    buildCommand: npm install && CI=false npm run build
-    startCommand: node server.js
+    plan: free
+    buildCommand: CI=false npm install && npm run build
+    startCommand: npm run serve
     envVars:
       - key: NODE_ENV
         value: production

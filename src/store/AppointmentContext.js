@@ -1,4 +1,7 @@
-import React, { createContext, useState, useContext } from 'react';
+import React, { createContext, useState, useContext, useEffect } from 'react';
+import { getAuthToken } from '../utils/auth';
+
+const API_URL = process.env.REACT_APP_API_URL || 'http://localhost:3000/api';
 
 const AppointmentContext = createContext();
 
@@ -13,40 +16,175 @@ export const AppointmentProvider = ({ children }) => {
     email: '',
     phone: '',
     service: '',
-    nailStyle: null // Nuevo campo para el estilo de uñas
+    nailStyle: null
   });
+  const [manicurists, setManicurists] = useState([]);
+  const [services, setServices] = useState([]);
+  const [nailStyles, setNailStyles] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
-  // Datos de manicuristas
-  const manicurists = [
-    {
-      id: 1,
-      name: "Claudia",
-      specialty: "Especialista en uñas acrílicas",
-      avatar: "/images/manicurists/claudia.jpg", // Reemplazar con foto real
-      timeSlots: [
-        { time: "09:00", available: true },
-        { time: "10:00", available: false },
-        { time: "11:00", available: true },
-        { time: "12:00", available: true },
-        { time: "13:00", available: false },
-        { time: "14:00", available: true },
-      ]
-    },
-    {
-      id: 2,
-      name: "Sucel",
-      specialty: "Especialista en diseños artísticos",
-      avatar: "/images/manicurists/sucel.jpg", // Reemplazar con foto real
-      timeSlots: [
-        { time: "09:00", available: false },
-        { time: "10:00", available: true },
-        { time: "11:00", available: true },
-        { time: "12:00", available: false },
-        { time: "13:00", available: true }, 
-        { time: "14:00", available: false },
-      ]
+  // Función para hacer peticiones autenticadas
+  const authFetch = async (url, options = {}) => {
+    const token = getAuthToken();
+    
+    const headers = {
+      'Content-Type': 'application/json',
+      ...options.headers
+    };
+    
+    if (token) {
+      headers['Authorization'] = `Bearer ${token}`;
     }
-  ];
+    
+    const response = await fetch(url, {
+      ...options,
+      headers
+    });
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw new Error(errorData.error || 'Error en la petición');
+    }
+    
+    return response.json();
+  };
+
+  // Cargar manicuristas activos
+  useEffect(() => {
+    const fetchManicurists = async () => {
+      try {
+        setLoading(true);
+        const data = await authFetch(`${API_URL}/manicurists?active=true`);
+        
+        // Transformar datos para el formato esperado por los componentes
+        const transformedManicurists = data.manicurists.map(m => ({
+          id: m.id,
+          name: m.user.name,
+          specialty: m.specialty,
+          avatar: m.user.profileImage || '/images/manicurists/default.jpg',
+          timeSlots: [] // Se cargará al seleccionar un manicurista
+        }));
+        
+        setManicurists(transformedManicurists);
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar manicuristas:', error);
+        setError('No se pudieron cargar los manicuristas');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchManicurists();
+  }, []);
+
+  // Cargar servicios activos
+  useEffect(() => {
+    const fetchServices = async () => {
+      try {
+        setLoading(true);
+        const data = await authFetch(`${API_URL}/services?active=true`);
+        setServices(data.services);
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar servicios:', error);
+        setError('No se pudieron cargar los servicios');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchServices();
+  }, []);
+
+  // Cargar disponibilidad del manicurista seleccionado
+  useEffect(() => {
+    if (!selectedManicurist) return;
+    
+    const fetchAvailability = async () => {
+      try {
+        setLoading(true);
+        
+        // Formatear fecha para la API
+        const formattedDate = selectedDate.toISOString().split('T')[0];
+        
+        const data = await authFetch(
+          `${API_URL}/availability/manicurist/${selectedManicurist}?date=${formattedDate}`
+        );
+        
+        // Transformar los datos para el formato esperado
+        const timeSlots = [];
+        
+        // Filtrar y transformar horarios disponibles
+        if (data.availabilities && data.availabilities.length > 0) {
+          data.availabilities.forEach(avail => {
+            if (avail.isAvailable) {
+              const startTime = new Date(`2000-01-01T${avail.startTime}`);
+              const endTime = new Date(`2000-01-01T${avail.endTime}`);
+              
+              // Crear slots de 1 hora entre startTime y endTime
+              while (startTime < endTime) {
+                const timeStr = startTime.toTimeString().substring(0, 5);
+                
+                // Verificar si ya hay una cita en ese horario
+                const hasAppointment = data.appointments && data.appointments.some(apt => {
+                  const aptTime = apt.startTime.substring(0, 5);
+                  return aptTime === timeStr;
+                });
+                
+                timeSlots.push({
+                  time: timeStr,
+                  available: !hasAppointment
+                });
+                
+                startTime.setMinutes(startTime.getMinutes() + 60);
+              }
+            }
+          });
+        }
+        
+        // Actualizar manicuristas con slots de tiempo
+        setManicurists(prev => 
+          prev.map(m => 
+            m.id === selectedManicurist 
+              ? { ...m, timeSlots } 
+              : m
+          )
+        );
+        
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar disponibilidad:', error);
+        setError('No se pudo cargar la disponibilidad');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchAvailability();
+  }, [selectedManicurist, selectedDate]);
+
+  // Cargar estilos de uñas para el servicio seleccionado
+  useEffect(() => {
+    if (!formData.service) return;
+    
+    const fetchNailStyles = async () => {
+      try {
+        setLoading(true);
+        const data = await authFetch(`${API_URL}/nail-styles?serviceId=${formData.service}&active=true`);
+        setNailStyles(data.nailStyles);
+        setError(null);
+      } catch (error) {
+        console.error('Error al cargar estilos de uñas:', error);
+        setError('No se pudieron cargar los estilos de uñas');
+      } finally {
+        setLoading(false);
+      }
+    };
+    
+    fetchNailStyles();
+  }, [formData.service]);
 
   const updateFormField = (field, value) => {
     setFormData(prev => ({
@@ -61,32 +199,72 @@ export const AppointmentProvider = ({ children }) => {
            formData.name.trim() !== '' && 
            formData.email.trim() !== '' && 
            formData.phone.trim() !== '' &&
-           formData.nailStyle !== null; // Verificamos que se haya seleccionado un estilo
+           formData.service &&
+           formData.nailStyle !== null;
   };
 
-  const submitAppointment = () => {
+  // Enviar datos de la cita a la API
+  const submitAppointment = async () => {
     if (!isFormValid()) return false;
     
-    // Aquí iría la lógica para enviar la cita al backend
-    console.log('Cita creada:', {
-      manicurist: manicurists.find(m => m.id === selectedManicurist).name,
-      date: selectedDate,
-      timeSlot: manicurists.find(m => m.id === selectedManicurist)
-                         .timeSlots[selectedTimeSlot].time,
-      client: formData
-    });
-    
-    // Resetear el formulario después de enviar
-    setSelectedTimeSlot(null);
-    setFormData({
-      name: '',
-      email: '',
-      phone: '',
-      service: '',
-      nailStyle: null
-    });
-    
-    return true;
+    try {
+      setLoading(true);
+      
+      const manicurist = manicurists.find(m => m.id === selectedManicurist);
+      const timeSlot = manicurist.timeSlots[selectedTimeSlot];
+      
+      // Preparar datos para la API
+      const appointmentData = {
+        manicuristId: selectedManicurist,
+        serviceId: parseInt(formData.service),
+        nailStyleId: formData.nailStyle ? 
+                    (formData.nailStyle.type === 'predefined' ? formData.nailStyle.id : null) : null,
+        date: selectedDate.toISOString().split('T')[0],
+        startTime: timeSlot.time + ':00',
+        customRequests: formData.customRequests || '',
+        referenceImages: formData.nailStyle && formData.nailStyle.type === 'custom' ? 
+                        formData.nailStyle.fileIds : []
+      };
+      
+      // Si el usuario está autenticado, usar su ID
+      const currentUser = JSON.parse(sessionStorage.getItem('currentUser'));
+      if (currentUser && currentUser.role === 'client') {
+        appointmentData.clientId = currentUser.id;
+      } else {
+        // Para usuarios no autenticados, enviar datos de cliente
+        // La API creará un usuario temporal o asociará con uno existente
+        appointmentData.clientData = {
+          name: formData.name,
+          email: formData.email,
+          phone: formData.phone
+        };
+      }
+      
+      // Enviar a la API
+      await authFetch(`${API_URL}/appointments`, {
+        method: 'POST',
+        body: JSON.stringify(appointmentData)
+      });
+      
+      // Resetear el formulario
+      setSelectedTimeSlot(null);
+      setFormData({
+        name: '',
+        email: '',
+        phone: '',
+        service: '',
+        nailStyle: null
+      });
+      
+      setError(null);
+      return true;
+    } catch (error) {
+      console.error('Error al crear cita:', error);
+      setError('No se pudo crear la cita: ' + error.message);
+      return false;
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (
@@ -100,6 +278,10 @@ export const AppointmentProvider = ({ children }) => {
       formData,
       updateFormField,
       manicurists,
+      services,
+      nailStyles,
+      loading,
+      error,
       isFormValid,
       submitAppointment
     }}>

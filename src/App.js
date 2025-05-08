@@ -3,6 +3,7 @@ import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import LoginPage from './components/LoginPage';
 import ClientDashboard from './components/ClientDashboard';
 import ManicuristDashboard from './components/ManicuristDashboard';
+import AdminDashboard from './components/AdminDashboard';
 import AppointmentBooking from './components/AppointmentBooking';
 import AppointmentConfirmed from './components/AppointmentConfirmed';
 import { AppointmentProvider } from './store/AppointmentContext';
@@ -67,6 +68,16 @@ function App() {
             element={
               <ProtectedRoute requiredRole="manicurist">
                 <ManicuristDashboard />
+              </ProtectedRoute>
+            }
+          />
+          
+          {/* Nueva ruta para el panel de administración */}
+          <Route
+            path="/admin-dashboard/*"
+            element={
+              <ProtectedRoute requiredRole="superadmin">
+                <AdminDashboard />
               </ProtectedRoute>
             }
           />

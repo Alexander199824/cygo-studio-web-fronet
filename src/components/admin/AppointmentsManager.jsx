@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { appointmentApi } from '../../utils/apiService';
 import { Calendar, CheckCircle, XCircle, AlertTriangle, Clock } from 'lucide-react';
 
@@ -33,10 +34,20 @@ const AppointmentsManager = ({ onError }) => {
         }
         
         const data = await appointmentApi.getAll(params);
-        setAppointments(data.appointments);
+        
+        // Verificar la estructura de datos recibida
+        if (data && data.appointments) {
+          setAppointments(data.appointments);
+        } else if (Array.isArray(data)) {
+          // Adaptación en caso de que la API devuelva directamente un array
+          setAppointments(data);
+        } else {
+          console.warn('Formato de respuesta inesperado:', data);
+          setAppointments([]);
+        }
       } catch (err) {
         console.error('Error al cargar citas:', err);
-        onError('Error al cargar citas');
+        onError(err.message || 'Error al cargar citas');
       } finally {
         setLoading(false);
       }
@@ -56,7 +67,7 @@ const AppointmentsManager = ({ onError }) => {
       ));
     } catch (err) {
       console.error('Error al cambiar estado de cita:', err);
-      onError('Error al cambiar estado de cita');
+      onError(err.message || 'Error al cambiar estado de cita');
     } finally {
       setLoading(false);
     }
@@ -69,7 +80,7 @@ const AppointmentsManager = ({ onError }) => {
       alert('Recordatorio enviado correctamente');
     } catch (err) {
       console.error('Error al enviar recordatorio:', err);
-      onError('Error al enviar recordatorio');
+      onError(err.message || 'Error al enviar recordatorio');
     } finally {
       setLoading(false);
     }
@@ -90,8 +101,8 @@ const AppointmentsManager = ({ onError }) => {
   // Filtrar citas por búsqueda
   const filteredAppointments = searchQuery
     ? appointments.filter(a => 
-        a.client.name.toLowerCase().includes(searchQuery.toLowerCase()) ||
-        a.service.name.toLowerCase().includes(searchQuery.toLowerCase())
+        (a.client?.name || '').toLowerCase().includes(searchQuery.toLowerCase()) ||
+        (a.service?.name || '').toLowerCase().includes(searchQuery.toLowerCase())
       )
     : appointments;
 
@@ -145,13 +156,13 @@ const AppointmentsManager = ({ onError }) => {
       <div className="flex justify-between items-center">
         <h2 className="text-xl font-semibold">Gestión de Citas</h2>
         <div className="flex items-center gap-2">
-          <a 
-            href="/admin-dashboard/appointments/calendar"
+          <Link 
+            to="/admin-dashboard/appointments/calendar"
             className="flex items-center gap-2 px-4 py-2 bg-[#1a385a] text-white rounded-md hover:bg-[#2c4a76] transition-colors"
           >
             <Calendar size={18} />
             <span>Ver Calendario</span>
-          </a>
+          </Link>
         </div>
       </div>
 
@@ -255,30 +266,31 @@ const AppointmentsManager = ({ onError }) => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <img 
                         className="h-10 w-10 rounded-full" 
-                        src={appointment.client.profileImage || '/images/placeholder.jpg'} 
+                        src={appointment.client?.profileImage || '/images/placeholder.jpg'} 
                         alt="" 
                       />
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {appointment.client.name}
+                        {appointment.client?.name || 'Cliente sin nombre'}
                       </div>
                       <div className="text-sm text-gray-500">
-                        {appointment.client.email}
+                        {appointment.client?.email || 'Sin email'}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {new Date(appointment.date).toLocaleDateString()}
+                    {appointment.date ? new Date(appointment.date).toLocaleDateString() : 'Fecha no disponible'}
                   </div>
                   <div className="text-sm text-gray-500">
-                    {appointment.startTime.substring(0, 5)} - {appointment.endTime.substring(0, 5)}
+                    {appointment.startTime ? appointment.startTime.substring(0, 5) : '--:--'} - 
+                    {appointment.endTime ? appointment.endTime.substring(0, 5) : '--:--'}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{appointment.service.name}</div>
+                  <div className="text-sm text-gray-900">{appointment.service?.name || 'Servicio no especificado'}</div>
                   {appointment.nailStyle && (
                     <div className="text-xs text-gray-500">
                       Estilo: {appointment.nailStyle.name}
@@ -287,10 +299,10 @@ const AppointmentsManager = ({ onError }) => {
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="text-sm text-gray-900">
-                    {appointment.manicurist.user.name}
+                    {appointment.manicurist?.user?.name || 'Manicurista no asignada'}
                   </div>
                   <div className="text-xs text-gray-500">
-                    {appointment.manicurist.specialty}
+                    {appointment.manicurist?.specialty || ''}
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
@@ -338,12 +350,12 @@ const AppointmentsManager = ({ onError }) => {
                       </>
                     )}
                     
-                    
-                      href={`/admin-dashboard/appointments/${appointment.id}`}
+                    <Link
+                      to={`/admin-dashboard/appointments/${appointment.id}`}
                       className="inline-flex items-center px-2 py-1 bg-gray-100 text-gray-700 rounded hover:bg-gray-200"
                     >
                       Ver
-                    </a>
+                    </Link>
                   </div>
                 </td>
               </tr>

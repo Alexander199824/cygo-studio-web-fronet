@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
 import { manicuristApi, userApi } from '../../utils/apiService';
 import { Edit, Check, X, UserPlus } from 'lucide-react';
 
@@ -21,10 +22,20 @@ const ManicuristsManager = ({ onError }) => {
       try {
         setLoading(true);
         const data = await manicuristApi.getAll();
-        setManicurists(data.manicurists);
+        
+        // Verificar la estructura de datos
+        if (data && data.manicurists) {
+          setManicurists(data.manicurists);
+        } else if (Array.isArray(data)) {
+          // Adaptación si la API devuelve directamente un array
+          setManicurists(data);
+        } else {
+          console.warn('Formato de respuesta inesperado:', data);
+          setManicurists([]);
+        }
       } catch (err) {
         console.error('Error al cargar manicuristas:', err);
-        onError('No se pudieron cargar las manicuristas');
+        onError(err.message || 'No se pudieron cargar las manicuristas');
       } finally {
         setLoading(false);
       }
@@ -52,7 +63,7 @@ const ManicuristsManager = ({ onError }) => {
         role: 'manicurist'
       };
       
-      const response = await fetch('/api/auth/register', {
+      const response = await fetch(`${process.env.REACT_APP_API_URL || 'http://localhost:3000/api'}/auth/register`, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
@@ -68,7 +79,11 @@ const ManicuristsManager = ({ onError }) => {
       
       // Recargar lista de manicuristas
       const data = await manicuristApi.getAll();
-      setManicurists(data.manicurists);
+      if (data && data.manicurists) {
+        setManicurists(data.manicurists);
+      } else if (Array.isArray(data)) {
+        setManicurists(data);
+      }
       
       // Limpiar formulario
       setShowAddForm(false);
@@ -100,7 +115,7 @@ const ManicuristsManager = ({ onError }) => {
       ));
     } catch (err) {
       console.error('Error al cambiar estado de manicurista:', err);
-      onError('Error al cambiar estado de manicurista');
+      onError(err.message || 'Error al cambiar estado de manicurista');
     } finally {
       setLoading(false);
     }
@@ -276,26 +291,26 @@ const ManicuristsManager = ({ onError }) => {
                     <div className="flex-shrink-0 h-10 w-10">
                       <img 
                         className="h-10 w-10 rounded-full" 
-                        src={manicurist.user.profileImage || '/images/manicurists/default.jpg'} 
-                        alt={manicurist.user.name}
+                        src={(manicurist.user?.profileImage || manicurist.profileImage) || '/images/manicurists/default.jpg'} 
+                        alt={manicurist.user?.name || manicurist.name || 'Manicurista'}
                       />
                     </div>
                     <div className="ml-4">
                       <div className="text-sm font-medium text-gray-900">
-                        {manicurist.user.name}
+                        {manicurist.user?.name || manicurist.name || 'Nombre no disponible'}
                       </div>
                       <div className="text-sm text-gray-500">
-                        @{manicurist.user.username}
+                        @{manicurist.user?.username || manicurist.username || 'Sin usuario'}
                       </div>
                     </div>
                   </div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{manicurist.user.email}</div>
-                  <div className="text-sm text-gray-500">{manicurist.user.phone}</div>
+                  <div className="text-sm text-gray-900">{manicurist.user?.email || manicurist.email || 'Sin email'}</div>
+                  <div className="text-sm text-gray-500">{manicurist.user?.phone || manicurist.phone || 'Sin teléfono'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
-                  <div className="text-sm text-gray-900">{manicurist.specialty}</div>
+                  <div className="text-sm text-gray-900">{manicurist.specialty || 'Sin especialidad'}</div>
                 </td>
                 <td className="px-6 py-4 whitespace-nowrap">
                   <div className="flex items-center">
@@ -353,12 +368,13 @@ const ManicuristsManager = ({ onError }) => {
                     )}
                   </button>
                   
-                    href={`/admin-dashboard/manicurists/${manicurist.id}`}
+                  <Link
+                    to={`/admin-dashboard/manicurists/${manicurist.id}`}
                     className="inline-flex items-center ml-2 px-2.5 py-1.5 border border-gray-300 shadow-sm text-xs font-medium rounded text-gray-700 bg-white hover:bg-gray-50"
                   >
                     <Edit size={14} className="mr-1" />
                     Editar
-                  </a>
+                  </Link>
                 </td>
               </tr>
             ))}

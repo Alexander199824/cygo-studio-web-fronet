@@ -237,3 +237,25 @@ export const userApi = {
     body: JSON.stringify({ role })
   })
 };
+
+// Funciones de utilidad para componentes
+export const fetchNailStyles = async () => {
+  try {
+    const response = await nailStyleApi.getAll({ active: true });
+    return response.nailStyles || [];
+  } catch (error) {
+    console.error('Error al cargar estilos de uñas:', error);
+    return [];
+  }
+};
+
+export const uploadReferenceImages = async (files) => {
+  // Simulación de carga para desarrollo
+  await new Promise(resolve => setTimeout(resolve, 1500));
+  
+  // En producción, esto subiría las imágenes a un servidor
+  return {
+    success: true,
+    fileIds: files.map((_, index) => `ref-${Date.now()}-${index}`)
+  };
+};

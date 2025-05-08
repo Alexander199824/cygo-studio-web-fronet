@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { useAppointment } from '../store/AppointmentContext';
-import { fetchNailStyles, uploadReferenceImages } from '../utils/api';
+import { fetchNailStyles, uploadReferenceImages } from '../utils/apiService';
 import { isValidImage, isValidImageSize, formatFileSize } from '../utils/imageUtils';
 
 const NailStyleSelection = () => {

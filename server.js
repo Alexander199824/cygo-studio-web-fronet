@@ -12,7 +12,7 @@ app.get('/*', function (req, res) {
 });
 
 // Obtener el puerto del entorno o usar 3000 como fallback
-const port = process.env.PORT || 3000;
+const port = process.env.PORT || 3001;
 
 app.listen(port, '0.0.0.0', () => {
   console.log(`Production server running on port ${port}`);
